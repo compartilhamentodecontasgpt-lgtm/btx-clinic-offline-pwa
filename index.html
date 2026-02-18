@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>BTX Clinic Offline</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logoMark">BTX</div>
+        <div class="brandText">
+          <div class="brandName">BTX Clinic</div>
+          <div class="brandTag">Offline • PWA • Sem banco</div>
+        </div>
+      </div>
+
+      <div class="topActions">
+        <button id="btnInstall" class="btn ghost" hidden>Instalar</button>
+        <button id="btnLock" class="btn ghost" hidden>Bloquear</button>
+      </div>
+    </header>
+
+    <!-- Public / Landing -->
+    <main id="landing" class="page">
+      <section class="hero card">
+        <div class="heroLeft">
+          <h1>Seu consultório rodando no seu aparelho.</h1>
+          <p>
+            Este PWA funciona offline, salva dados localmente e oferece backup/restauração em arquivo.
+            Sem servidor. Sem banco. Responsabilidade do usuário.
+          </p>
+          <div class="pillRow">
+            <span class="pill">Autosave</span>
+            <span class="pill">Backup (.json)</span>
+            <span class="pill">PDF local</span>
+            <span class="pill">Instalável</span>
+          </div>
+        </div>
+        <div class="heroRight">
+          <div class="photoBox">
+            <div class="photoHint">Coloque sua foto aqui</div>
+            <div class="photoSub">(substitua por /assets/foto.jpg se quiser)</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <section class="card">
+          <h2>Login</h2>
+          <p class="muted">PIN local (não aparece dica na tela). Padrão: <b>1212</b> (você pode mudar depois).</p>
+          <div class="row">
+            <input id="pinInput" class="input" type="password" inputmode="numeric" placeholder="Digite o PIN" />
+            <button id="btnLogin" class="btn primary">Entrar</button>
+          </div>
+          <div class="small muted" id="loginMsg"></div>
+        </section>
+
+        <section class="card">
+          <h2>Sobre</h2>
+          <p class="muted">
+            Ideal pra tablet/notebook. Se quiser sincronizar entre aparelhos no futuro, dá pra evoluir,
+            mas a versão offline-first é a mais estável e “à prova de internet”.
+          </p>
+          <ul class="list">
+            <li>Cadastro rápido de pacientes</li>
+            <li>Agenda simples por dia</li>
+            <li>Notas livres</li>
+            <li>Backup e restauração</li>
+          </ul>
+        </section>
+      </section>
+    </main>
+
+    <!-- Private / App -->
+    <main id="private" class="page" hidden>
+      <aside class="sidebar">
+        <button class="navItem active" data-view="dashboard">Painel</button>
+        <button class="navItem" data-view="patients">Pacientes</button>
+        <button class="navItem" data-view="agenda">Agenda</button>
+        <button class="navItem" data-view="notes">Notas</button>
+        <button class="navItem" data-view="backup">Backup</button>
+        <button class="navItem" data-view="settings">Config</button>
+      </aside>
+
+      <section class="content">
+        <!-- Views -->
+        <section id="view-dashboard" class="view">
+          <div class="card">
+            <h2>Painel</h2>
+            <div class="stats">
+              <div class="stat">
+                <div class="statNum" id="statPatients">0</div>
+                <div class="statLbl">Pacientes</div>
+              </div>
+              <div class="stat">
+                <div class="statNum" id="statToday">0</div>
+                <div class="statLbl">Agenda hoje</div>
+              </div>
+              <div class="stat">
+                <div class="statNum" id="statNotes">0</div>
+                <div class="statLbl">Notas</div>
+              </div>
+            </div>
+            <p class="muted">Tudo aqui fica salvo no aparelho. Faça backup regularmente.</p>
+          </div>
+
+          <div class="grid2">
+            <div class="card">
+              <h3>Agenda de hoje</h3>
+              <div id="todayList" class="miniList"></div>
+              <button class="btn" id="goAgenda">Abrir agenda</button>
+            </div>
+            <div class="card">
+              <h3>Últimos pacientes</h3>
+              <div id="recentPatients" class="miniList"></div>
+              <button class="btn" id="goPatients">Abrir pacientes</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-patients" class="view" hidden>
+          <div class="card">
+            <div class="row between">
+              <h2>Pacientes</h2>
+              <div class="row">
+                <input id="patientSearch" class="input" placeholder="Buscar por nome/telefone" />
+                <button id="btnNewPatient" class="btn primary">Novo</button>
+              </div>
+            </div>
+
+            <div id="patientsList" class="table"></div>
+          </div>
+
+          <div id="patientForm" class="card" hidden>
+            <div class="row between">
+              <h3 id="patientFormTitle">Novo paciente</h3>
+              <button class="btn ghost" id="btnClosePatientForm">Fechar</button>
+            </div>
+
+            <div class="grid2">
+              <div>
+                <label class="lbl">Nome</label>
+                <input id="p_name" class="input" />
+              </div>
+              <div>
+                <label class="lbl">Telefone</label>
+                <input id="p_phone" class="input" inputmode="tel" />
+              </div>
+              <div>
+                <label class="lbl">Nascimento</label>
+                <input id="p_birth" class="input" type="date" />
+              </div>
+              <div>
+                <label class="lbl">Documento</label>
+                <input id="p_doc" class="input" />
+              </div>
+            </div>
+
+            <label class="lbl">Observações</label>
+            <textarea id="p_notes" class="textarea" rows="4"></textarea>
+
+            <div class="row between">
+              <div class="row">
+                <button id="btnSavePatient" class="btn primary">Salvar</button>
+                <button id="btnDeletePatient" class="btn danger" hidden>Excluir</button>
+              </div>
+              <div class="small muted" id="patientMsg"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-agenda" class="view" hidden>
+          <div class="card">
+            <div class="row between">
+              <h2>Agenda</h2>
+              <div class="row">
+                <input id="agendaDate" class="input" type="date" />
+                <button id="btnNewAppt" class="btn primary">Novo</button>
+              </div>
+            </div>
+            <div id="agendaList" class="table"></div>
+          </div>
+
+          <div id="apptForm" class="card" hidden>
+            <div class="row between">
+              <h3 id="apptFormTitle">Novo agendamento</h3>
+              <button class="btn ghost" id="btnCloseApptForm">Fechar</button>
+            </div>
+
+            <div class="grid2">
+              <div>
+                <label class="lbl">Hora</label>
+                <input id="a_time" class="input" type="time" />
+              </div>
+              <div>
+                <label class="lbl">Paciente</label>
+                <select id="a_patient" class="input"></select>
+              </div>
+            </div>
+            <label class="lbl">Motivo / Procedimento</label>
+            <input id="a_reason" class="input" />
+
+            <label class="lbl">Status</label>
+            <select id="a_status" class="input">
+              <option value="Confirmado">Confirmado</option>
+              <option value="Aguardando">Aguardando</option>
+              <option value="Atendido">Atendido</option>
+              <option value="Faltou">Faltou</option>
+              <option value="Remarcado">Remarcado</option>
+            </select>
+
+            <div class="row between">
+              <div class="row">
+                <button id="btnSaveAppt" class="btn primary">Salvar</button>
+                <button id="btnDeleteAppt" class="btn danger" hidden>Excluir</button>
+              </div>
+              <div class="small muted" id="apptMsg"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-notes" class="view" hidden>
+          <div class="card">
+            <div class="row between">
+              <h2>Notas</h2>
+              <button id="btnNewNote" class="btn primary">Nova</button>
+            </div>
+            <div id="notesList" class="table"></div>
+          </div>
+
+          <div id="noteForm" class="card" hidden>
+            <div class="row between">
+              <h3 id="noteFormTitle">Nova nota</h3>
+              <button class="btn ghost" id="btnCloseNoteForm">Fechar</button>
+            </div>
+
+            <label class="lbl">Título</label>
+            <input id="n_title" class="input" />
+
+            <label class="lbl">Conteúdo</label>
+            <textarea id="n_body" class="textarea" rows="6"></textarea>
+
+            <div class="row between">
+              <div class="row">
+                <button id="btnSaveNote" class="btn primary">Salvar</button>
+                <button id="btnDeleteNote" class="btn danger" hidden>Excluir</button>
+              </div>
+              <div class="small muted" id="noteMsg"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-backup" class="view" hidden>
+          <div class="card">
+            <h2>Backup</h2>
+            <p class="muted">Exporta tudo pra um arquivo .json. Pra restaurar, escolha o arquivo e importe.</p>
+
+            <div class="row">
+              <button id="btnExport" class="btn primary">Exportar Backup</button>
+              <label class="btn ghost" for="importFile">Importar Backup</label>
+              <input id="importFile" type="file" accept="application/json" hidden />
+            </div>
+
+            <div class="divider"></div>
+
+            <h3>Higienização</h3>
+            <p class="muted">Se for vender/transferir o aparelho, apague os dados locais.</p>
+            <button id="btnWipe" class="btn danger">Apagar tudo do aparelho</button>
+
+            <div class="small muted" id="backupMsg"></div>
+          </div>
+        </section>
+
+        <section id="view-settings" class="view" hidden>
+          <div class="card">
+            <h2>Configurações</h2>
+
+            <div class="grid2">
+              <div>
+                <label class="lbl">PIN atual</label>
+                <input id="s_pin_old" class="input" type="password" inputmode="numeric" placeholder="PIN atual" />
+              </div>
+              <div>
+                <label class="lbl">Novo PIN</label>
+                <input id="s_pin_new" class="input" type="password" inputmode="numeric" placeholder="Novo PIN" />
+              </div>
+            </div>
+            <button id="btnChangePin" class="btn primary">Trocar PIN</button>
+            <div class="small muted" id="settingsMsg"></div>
+
+            <div class="divider"></div>
+            <h3>Profissional</h3>
+            <p class="muted">Aparece em PDFs futuramente (aqui já fica salvo pro app).</p>
+            <div class="grid2">
+              <div>
+                <label class="lbl">Nome</label>
+                <input id="s_prof_name" class="input" />
+              </div>
+              <div>
+                <label class="lbl">Registro (CRO/CRM)</label>
+                <input id="s_prof_reg" class="input" />
+              </div>
+              <div>
+                <label class="lbl">Telefone</label>
+                <input id="s_prof_phone" class="input" />
+              </div>
+              <div>
+                <label class="lbl">E-mail</label>
+                <input id="s_prof_email" class="input" />
+              </div>
+            </div>
+            <label class="lbl">Endereço</label>
+            <input id="s_prof_addr" class="input" />
+            <div class="row between">
+              <button id="btnSaveProfile" class="btn">Salvar perfil</button>
+              <div class="small muted" id="profileMsg"></div>
+            </div>
+          </div>
+        </section>
+
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span class="muted">BTX Clinic Offline • v0.1 • Dados locais • Faça backup</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
